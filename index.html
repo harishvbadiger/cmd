@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harish | Student Portfolio</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #222;
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: white;
+      text-align: center;
+      padding: 90px 20px;
+    }
+
+    header h1 {
+      font-size: 50px;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      font-size: 20px;
+      opacity: 0.9;
+    }
+
+    nav {
+      background: white;
+      padding: 15px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      z-index: 10;
+    }
+
+    nav a {
+      color: #333;
+      text-decoration: none;
+      margin: 0 15px;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      color: #2563eb;
+    }
+
+    section {
+      max-width: 900px;
+      margin: auto;
+      padding: 70px 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2563eb;
+      margin-bottom: 30px;
+      font-size: 32px;
+    }
+
+    .about {
+      text-align: center;
+      font-size: 18px;
+    }
+
+    .cards {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background: white;
+      width: 250px;
+      padding: 30px;
+      text-align: center;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    }
+
+    .card .icon {
+      font-size: 45px;
+      margin-bottom: 15px;
+    }
+
+    .contact {
+      text-align: center;
+      background: #111827;
+      color: white;
+      max-width: none;
+    }
+
+    .contact h2 {
+      color: white;
+    }
+
+    footer {
+      background: #0b1120;
+      color: #aaa;
+      text-align: center;
+      padding: 20px;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 38px;
+      }
+
+      nav a {
+        margin: 0 7px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Hi, I'm Harish 👋</h1>
+    <p>2nd Year Student | JIT College, Davanagere</p>
+  </header>
+
+  <nav>
+    <a href="#about">About</a>
+    <a href="#hobbies">Hobbies</a>
+    <a href="#contact">Contact</a>
+  </nav>
+
+  <section id="about">
+    <h2>About Me</h2>
+    <div class="about">
+      <p>
+        Hello! My name is <strong>Harish</strong>. I am currently studying
+        in my 2nd year at <strong>JIT College, Davanagere</strong>.
+        I enjoy learning new things and spending my free time doing
+        activities that I love.
+      </p>
+    </div>
+  </section>
+
+  <section id="hobbies">
+    <h2>My Hobbies</h2>
+
+    <div class="cards">
+
+      <div class="card">
+        <div class="icon">📚</div>
+        <h3>Reading Books</h3>
+        <p>
+          I enjoy reading books and exploring new ideas through reading.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="icon">🎮</div>
+        <h3>Playing Games</h3>
+        <p>
+          I like playing games during my free time for fun and relaxation.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="icon">💻</div>
+        <h3>Learning</h3>
+        <p>
+          I am interested in learning new skills and improving myself.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <h2>Get In Touch</h2>
+    <p>Thanks for visiting my personal page!</p>
+  </section>
+
+  <footer>
+    <p>© 2026 Harish. All Rights Reserved.</p>
+  </footer>
+
+</body>
+</html>
