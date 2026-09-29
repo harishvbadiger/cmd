@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>TypeRush — Typing Game</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #070b16;
+      --card: rgba(17, 24, 39, 0.75);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #8b5cf6;
+      --secondary: #06b6d4;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Inter", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(139, 92, 246, 0.18), transparent 30%),
+        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.15), transparent 30%),
+        var(--bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      background: rgba(139, 92, 246, 0.08);
+      filter: blur(100px);
+      border-radius: 50%;
+      top: -150px;
+      right: -150px;
+      pointer-events: none;
+    }
+
+    .container {
+      width: min(1000px, 92%);
+      margin: 40px auto;
+    }
+
+    /* Header */
+
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .logo span {
+      color: var(--primary);
+    }
+
+    .tagline {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* Main Card */
+
+    .game-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    /* Stats */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    .stat {
+      padding: 18px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      text-align: center;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 25px;
+      font-weight: 700;
+    }
+
+    /* Progress */
+
+    .progress-area {
+      margin-bottom: 25px;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .progress {
+      height: 6px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transition: width 0.2s ease;
+    }
+
+    /* Text */
+
+    .text-box {
+      background: rgba(0,0,0,0.18);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      margin-bottom: 20px;
+      line-height: 2;
+      font-size: 21px;
+      letter-spacing: 0.2px;
+      min-height: 145px;
+    }
+
+    .text-box span {
+      color: #64748b;
+    }
+
+    .text-box .correct {
+      color: var(--green);
+    }
+
+    .text-box .wrong {
+      color: var(--red);
+      text-decoration: underline;
+    }
+
+    .text-box .current {
+      color: white;
+      border-bottom: 2px solid var(--primary);
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        border-color: transparent;
+      }
+    }
+
+    /* Input */
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      resize: none;
+      outline: none;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.035);
+      color: white;
+      padding: 18px;
+      font-family: inherit;
+      font-size: 16px;
+      line-height: 1.6;
+      transition: 0.25s;
+    }
+
+    textarea::placeholder {
+      color: #64748b;
+    }
+
+    textarea:focus {
+      border-color: rgba(139, 92, 246, 0.7);
+      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+    }
+
+    /* Buttons */
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 18px;
+      gap: 15px;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .restart {
+      border: none;
+      outline: none;
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      padding: 12px 22px;
+      border-radius: 12px;
+      font-family: inherit;
+      font-weight: 600;
+      transition: 0.25s;
+      box-shadow: 0 8px 25px rgba(124, 58, 237, 0.25);
+    }
+
+    .restart:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(124, 58, 237, 0.35);
+    }
+
+    .restart:active {
+      transform: scale(0.97);
+    }
+
+    /* Result */
+
+    .result {
+      display: none;
+      margin-top: 25px;
+      text-align: center;
+      padding: 25px;
+      border-radius: 18px;
+      background: linear-gradient(
+        135deg,
+        rgba(139,92,246,0.12),
+        rgba(6,182,212,0.08)
+      );
+      border: 1px solid rgba(139,92,246,0.2);
+    }
+
+    .result h2 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .result p {
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .result-stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+    }
+
+    .result-number {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--secondary);
+    }
+
+    .result-label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .footer {
+      text-align: center;
+      color: #475569;
+      font-size: 12px;
+      margin-top: 20px;
+    }
+
+    /* Responsive */
+
+    @media (max-width: 700px) {
+      .game-card {
+        padding: 18px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .text-box {
+        padding: 20px;
+        font-size: 17px;
+        line-height: 1.9;
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .restart {
+        width: 100%;
+      }
+
+      .hint {
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header class="header">
+      <div class="logo">⚡ Type<span>Rush</span></div>
+      <p class="tagline">Test your speed. Improve your accuracy. Beat your record.</p>
+    </header>
+
+    <main class="game-card">
+
+      <!-- Stats -->
+      <div class="stats">
+
+        <div class="stat">
+          <div class="stat-label">Time</div>
+          <div class="stat-value" id="time">30</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">WPM</div>
+          <div class="stat-value" id="wpm">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Accuracy</div>
+          <div class="stat-value" id="accuracy">100%</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Score</div>
+          <div class="stat-value" id="score">0</div>
+        </div>
+
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-area">
+
+        <div class="progress-info">
+          <span>Typing progress</span>
+          <span id="progressText">0%</span>
+        </div>
+
+        <div class="progress">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+      </div>
+
+      <!-- Text -->
+      <div class="text-box" id="textDisplay"></div>
+
+      <!-- Input -->
+      <textarea
+        id="input"
+        placeholder="Start typing here..."
+        spellcheck="false"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+      ></textarea>
+
+      <!-- Controls -->
+      <div class="controls">
+        <div class="hint">
+          💡 Start typing to begin the timer
+        </div>
+
+        <button class="restart" onclick="restartGame()">
+          ↻ Restart Game
+        </button>
+      </div>
+
+      <!-- Result -->
+      <div class="result" id="result">
+
+        <h2>🎉 Time's Up!</h2>
+
+        <p>Great job! Here's your performance.</p>
+
+        <div class="result-stats">
+
+          <div>
+            <div class="result-number" id="finalWpm">0</div>
+            <div class="result-label">WPM</div>
+          </div>
+
+          <div>
+            <div class="result-number" id="finalAccuracy">0%</div>
+            <div class="result-label">Accuracy</div>
+          </div>
+
+          <div>
+            <div class="result-number" id="finalScore">0</div>
+            <div class="result-label">Score</div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+    <div class="footer">
+      Made with ❤️ by Harish
+    </div>
+
+  </div>
+
+
+  <script>
+
+    const sentences = [
+      "The future belongs to those who believe in the beauty of their dreams.",
+      "Success is not final and failure is not fatal; it is the courage to continue that counts.",
+      "Every expert was once a beginner who refused to give up.",
+      "Great things happen when you stay focused and keep moving forward.",
+      "Learning never stops because every new day brings a chance to improve yourself.",
+      "The secret of getting ahead is getting started and believing in your abilities."
+    ];
+
+    const textDisplay = document.getElementById("textDisplay");
+    const input = document.getElementById("input");
+
+    const timeDisplay = document.getElementById("time");
+    const wpmDisplay = document.getElementById("wpm");
+    const accuracyDisplay = document.getElementById("accuracy");
+    const scoreDisplay = document.getElementById("score");
+
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+
+    const result = document.getElementById("result");
+
+    const finalWpm = document.getElementById("finalWpm");
+    const finalAccuracy = document.getElementById("finalAccuracy");
+    const finalScore = document.getElementById("finalScore");
+
+    let sentence = "";
+    let timer = 30;
+    let started = false;
+    let interval = null;
+
+
+    function getRandomSentence() {
+      return sentences[Math.floor(Math.random() * sentences.length)];
+    }
+
+
+    function loadText() {
+
+      sentence = getRandomSentence();
+
+      textDisplay.innerHTML = "";
+
+      sentence.split("").forEach((char, index) => {
+
+        const span = document.createElement("span");
+
+        span.textContent = char;
+
+        if (index === 0) {
+          span.classList.add("current");
+        }
+
+        textDisplay.appendChild(span);
+
+      });
+    }
+
+
+    function startTimer() {
+
+      if (started) return;
+
+      started = true;
+
+      interval = setInterval(() => {
+
+        timer--;
+
+        timeDisplay.textContent = timer;
+
+        updateStats();
+
+        if (timer <= 0) {
+          endGame();
+        }
+
+      }, 1000);
+    }
+
+
+    input.addEventListener("input", () => {
+
+      if (!started && input.value.length > 0) {
+        startTimer();
+      }
+
+      const typed = input.value;
+      const spans = textDisplay.querySelectorAll("span");
+
+      let correct = 0;
+
+      spans.forEach((span, index) => {
+
+        span.classList.remove("correct", "wrong", "current");
+
+        if (index < typed.length) {
+
+          if (typed[index] === sentence[index]) {
+            span.classList.add("correct");
+            correct++;
+          } else {
+            span.classList.add("wrong");
+          }
+
+        } else if (index === typed.length) {
+
+          span.classList.add("current");
+
+        }
+
+      });
+
+
+      const progress = Math.min(
+        (typed.length / sentence.length) * 100,
+        100
+      );
+
+      progressBar.style.width = progress + "%";
+      progressText.textContent = Math.floor(progress) + "%";
+
+      updateStats();
+
+
+      // New sentence when completed
+      if (typed.length >= sentence.length) {
+
+        input.value = "";
+
+        loadText();
+
+      }
+
+    });
+
+
+    function updateStats() {
+
+      const typed = input.value;
+
+      let correct = 0;
+
+      for (let i = 0; i < typed.length; i++) {
+
+        if (typed[i] === sentence[i]) {
+          correct++;
+        }
+
+      }
+
+      const accuracy = typed.length
+        ? Math.round((correct / typed.length) * 100)
+        : 100;
+
+      const elapsed = 30 - timer;
+
+      const minutes = elapsed / 60;
+
+      const wpm = minutes > 0
+        ? Math.round((typed.length / 5) / minutes)
+        : 0;
+
+      const score = correct * 10 + wpm * 2;
+
+      wpmDisplay.textContent = wpm;
+      accuracyDisplay.textContent = accuracy + "%";
+      scoreDisplay.textContent = score;
+
+    }
+
+
+    function endGame() {
+
+      clearInterval(interval);
+
+      input.disabled = true;
+
+      updateStats();
+
+      finalWpm.textContent = wpmDisplay.textContent;
+      finalAccuracy.textContent = accuracyDisplay.textContent;
+      finalScore.textContent = scoreDisplay.textContent;
+
+      result.style.display = "block";
+
+    }
+
+
+    function restartGame() {
+
+      clearInterval(interval);
+
+      timer = 30;
+      started = false;
+
+      input.disabled = false;
+      input.value = "";
+
+      timeDisplay.textContent = "30";
+      wpmDisplay.textContent = "0";
+      accuracyDisplay.textContent = "100%";
+      scoreDisplay.textContent = "0";
+
+      progressBar.style.width = "0%";
+      progressText.textContent = "0%";
+
+      result.style.display = "none";
+
+      loadText();
+
+      input.focus();
+
+    }
+
+
+    // Start game
+    loadText();
+
+  </script>
+
+</body>
+</html>
