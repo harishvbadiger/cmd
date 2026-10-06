@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drift & Escape</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0b0f19;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        /* HUD UI */
+        .hud-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        .hud-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        .level-info h2 {
+            font-size: 1.2rem;
+            color: #38bdf8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .timer-badge {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #f1f5f9;
+            font-family: monospace;
+        }
+        .bars-container {
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .bar-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+        }
+        .bar-bg {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        .bar-fill {
+            height: 100%;
+            width: 100%;
+            transition: width 0.1s linear;
+            border-radius: 6px;
+        }
+        .health-fill { background: linear-gradient(90deg, #ef4444, #f87171); }
+        .nitro-fill { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
+        
+        .hud-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .speedometer {
+            text-align: center;
+        }
+        .speed-val {
+            font-size: 2.8rem;
+            font-weight: 900;
+            font-family: monospace;
+            line-height: 1;
+            background: linear-gradient(180deg, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .speed-unit {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        .drift-score-box {
+            text-align: right;
+        }
+        .drift-score {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #f59e0b;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+        .drift-combo {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ec4899;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .drift-combo.active { opacity: 1; }
+
+        /* MODAL SCREENS */
+        .modal {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 15, 26, 0.85);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            pointer-events: auto;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        .modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .modal-card {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 36px 48px;
+            max-width: 540px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+        .modal-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .modal-desc {
+            color: #94a3b8;
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            transition: all 0.2s;
+            margin: 6px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: none;
+        }
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .level-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 12px 6px;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .level-btn:hover {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: #38bdf8;
+        }
+        .level-btn.active {
+            background: #38bdf8;
+            color: #0f172a;
+        }
+        .controls-hint {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin: 20px 0;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+        .key {
+            background: rgba(255,255,255,0.15);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        .audio-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 101;
+            pointer-events: auto;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <button class="audio-toggle" id="audioToggleBtn">🔊 Audio: ON</button>
+
+        <!-- HUD -->
+        <div class="hud-overlay" id="hud">
+            <div class="hud-top">
+                <div class="card level-info">
+                    <h2 id="hud-level-name">Level 1 - Suburban Escapes</h2>
+                    <div class="timer-badge" id="hud-timer">01:00</div>
+                </div>
+                <div class="card bars-container">
+                    <div class="bar-wrapper">
+                        <div class="bar-label"><span>VEHICLE HEALTH</span><span id="health-val">100%</span></div>
+                        <div class="bar-bg"><div class="bar-fill health-fill" id="health-bar"></div></div>
+                    </div>
+                    <div class="bar-wrapper">
+                        <div class="bar-label"><span>NITRO BOOST</span><span id="nitro-val">100%</span></div>
+                        <div class="bar-bg"><div class="bar-fill nitro-fill" id="nitro-bar"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hud-bottom">
+                <div class="card speedometer">
+                    <div class="speed-val" id="speed-display">0</div>
+                    <div class="speed-unit">KM/H</div>
+                </div>
+                <div class="card drift-score-box">
+                    <div class="drift-score" id="drift-score-display">0 PTS</div>
+                    <div class="drift-combo" id="drift-combo-display">DRIFT x1.0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- START MODAL -->
+        <div class="modal" id="startModal">
+            <div class="modal-card">
+                <h1 class="modal-title">DRIFT & ESCAPE</h1>
+                <p class="modal-desc">Outrun high-speed police units, master precision drifting, and survive until the timer expires!</p>
+
+                <div class="controls-hint">
+                    <div><span class="key">W A S D</span> / <span class="key">↑ ↓ ← →</span> Drive</div>
+                    <div><span class="key">SPACE</span> Nitro / Handbrake</div>
+                </div>
+
+                <p style="font-size:0.85rem; color:#64748b; margin-bottom:10px;">SELECT LEVEL:</p>
+                <div class="level-grid" id="levelSelectGrid">
+                    <button class="level-btn active" onclick="selectLevel(0)">1</button>
+                    <button class="level-btn" onclick="selectLevel(1)">2</button>
+                    <button class="level-btn" onclick="selectLevel(2)">3</button>
+                    <button class="level-btn" onclick="selectLevel(3)">4</button>
+                    <button class="level-btn" onclick="selectLevel(4)">5</button>
+                </div>
+
+                <button class="btn" onclick="startGame()">START ESCAPE</button>
+            </div>
+        </div>
+
+        <!-- GAMEOVER MODAL -->
+        <div class="modal hidden" id="gameOverModal">
+            <div class="modal-card">
+                <h1 class="modal-title" style="background: linear-gradient(135deg, #ef4444, #f87171); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">BUSTED!</h1>
+                <p class="modal-desc" id="gameOverReason">Your vehicle was wrecked by police pursuit units.</p>
+                <button class="btn" onclick="restartLevel()">RETRY</button>
+                <button class="btn btn-secondary" onclick="showStartMenu()">MAIN MENU</button>
+            </div>
+        </div>
+
+        <!-- WIN MODAL -->
+        <div class="modal hidden" id="winModal">
+            <div class="modal-card">
+                <h1 class="modal-title" style="background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ESCAPED!</h1>
+                <p class="modal-desc">You lost the heat and escaped the pursuit zone!</p>
+                <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #f59e0b;" id="winScoreDisplay">Drift Score: 0</div>
+                <button class="btn" id="nextLevelBtn" onclick="nextLevel()">NEXT LEVEL</button>
+                <button class="btn btn-secondary" onclick="showStartMenu()">MAIN MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           AUDIO SYSTEM (Web Audio API Synthesizer)
+           ========================================================================== */
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+                this.engineOsc = null;
+                this.engineGain = null;
+                this.sirenOsc = null;
+                this.sirenGain = null;
+                this.initialized = false;
+            }
+
+            init() {
+                if (this.initialized) return;
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioCtx();
+                    
+                    // Engine synth
+                    this.engineOsc = this.ctx.createOscillator();
+                    this.engineGain = this.ctx.createGain();
+                    this.engineOsc.type = 'sawtooth';
+                    this.engineOsc.frequency.setValueAtTime(40, this.ctx.currentTime);
+                    this.engineGain.gain.setValueAtTime(0.01, this.ctx.currentTime);
+                    this.engineOsc.connect(this.engineGain);
+                    this.engineGain.connect(this.ctx.destination);
+                    this.engineOsc.start();
+
+                    this.initialized = true;
+                } catch(e) { console.log('Audio init failed', e); }
+            }
+
+            updateEngine(speedRatio) {
+                if (!this.initialized || !this.enabled) return;
+                const freq = 40 + speedRatio * 160;
+                this.engineOsc.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.05);
+                this.engineGain.gain.setTargetAtTime(0.02 + speedRatio * 0.03, this.ctx.currentTime, 0.05);
+            }
+
+            playScreech() {
+                if (!this.initialized || !this.enabled) return;
+                const bufferSize = this.ctx.sampleRate * 0.1;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 1200;
+                filter.Q.value = 3;
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
+            }
+
+            playCrash() {
+                if (!this.initialized || !this.enabled) return;
+                const bufferSize = this.ctx.sampleRate * 0.3;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+                }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                noise.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
+            }
+
+            playNitro() {
+                if (!this.initialized || !this.enabled) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.2);
+            }
+        }
+
+        const audio = new SoundEngine();
+
+        const LEVELS = [
+            {
+                id: 1,
+                name: "Suburban Escapes",
+                season: "spring",
+                timeOfDay: "morning",
+                duration: 45,
+                policeCount: 2,
+                policeSpeed: 3.8,
+                friction: 0.96,
+                bgColor: "#3f6212",
+                roadColor: "#334155",
+                petalColor: "#f472b6"
+            },
+            {
+                id: 2,
+                name: "City Heat",
+                season: "summer",
+                timeOfDay: "afternoon",
+                duration: 50,
+                policeCount: 3,
+                policeSpeed: 4.4,
+                friction: 0.96,
+                bgColor: "#15803d",
+                roadColor: "#1e293b",
+                petalColor: null
+            },
+            {
+                id: 3,
+                name: "Autumn Highway",
+                season: "autumn",
+                timeOfDay: "sunset",
+                duration: 60,
+                policeCount: 4,
+                policeSpeed: 4.8,
+                friction: 0.95,
+                bgColor: "#78350f",
+                roadColor: "#1e293b",
+                petalColor: "#d97706"
+            },
+            {
+                id: 4,
+                name: "Industrial Night",
+                season: "autumn",
+                timeOfDay: "night",
+                duration: 60,
+                policeCount: 5,
+                policeSpeed: 5.2,
+                friction: 0.95,
+                bgColor: "#0f172a",
+                roadColor: "#020617",
+                petalColor: null
+            },
+            {
+                id: 5,
+                name: "Blizzard Pursuit",
+                season: "winter",
+                timeOfDay: "night",
+                duration: 70,
+                policeCount: 6,
+                policeSpeed: 5.6,
+                friction: 0.985, // Extra drift/icy!
+                bgColor: "#1e293b",
+                roadColor: "#475569",
+                petalColor: "#ffffff"
+            }
+        ];
+
+        class InputHandler {
+            constructor() {
+                this.keys = { up: false, down: false, left: false, right: false, space: false };
+                window.addEventListener('keydown', e => this.keyChange(e, true));
+                window.addEventListener('keyup', e => this.keyChange(e, false));
+            }
+
+            keyChange(e, isDown) {
+                switch(e.code) {
+                    case 'KeyW': case 'ArrowUp': this.keys.up = isDown; break;
+                    case 'KeyS': case 'ArrowDown': this.keys.down = isDown; break;
+                    case 'KeyA': case 'ArrowLeft': this.keys.left = isDown; break;
+                    case 'KeyD': case 'ArrowRight': this.keys.right = isDown; break;
+                    case 'Space': this.keys.space = isDown; e.preventDefault(); break;
+                }
+            }
+        }
+
+        class ParticleSystem {
+            constructor() {
+                this.particles = [];
+            }
+
+            spawn(x, y, vx, vy, color, size, life, type = 'generic') {
+                this.particles.push({ x, y, vx, vy, color, size, life, maxLife: life, type });
+            }
+
+            update() {
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    let p = this.particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life--;
+                    if (p.type === 'snow' || p.type === 'leaf') {
+                        p.vx += (Math.random() - 0.5) * 0.1;
+                    }
+                    if (p.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+            }
+
+            draw(ctx) {
+                this.particles.forEach(p => {
+                    ctx.save();
+                    ctx.globalAlpha = p.life / p.maxLife;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+            }
+        }
+
+        class Vehicle {
+            constructor(x, y, color, isPlayer = false) {
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.angle = 0;
+                this.speed = 0;
+                this.maxSpeed = isPlayer ? 7.5 : 5.0;
+                this.accel = 0.2;
+                this.steering = 0.055;
+                this.color = color;
+                this.isPlayer = isPlayer;
+                this.width = 24;
+                this.height = 44;
+                this.health = 100;
+                this.nitro = 100;
+                this.isDrifting = false;
+                this.slipAngle = 0;
+            }
+
+            update(inputs, envFriction, particleSystem) {
+                if (this.isPlayer) {
+                    let nitroActive = inputs.space && this.nitro > 0;
+                    let currentMaxSpeed = nitroActive ? this.maxSpeed * 1.4 : this.maxSpeed;
+                    let currentAccel = nitroActive ? this.accel * 2.0 : this.accel;
+
+                    if (nitroActive) {
+                        this.nitro = Math.max(0, this.nitro - 0.8);
+                        audio.playNitro();
+                        // Nitro flame
+                        let rearX = this.x - Math.sin(this.angle) * (this.height / 2);
+                        let rearY = this.y + Math.cos(this.angle) * (this.height / 2);
+                        particleSystem.spawn(rearX, rearY, -Math.sin(this.angle) * 3, Math.cos(this.angle) * 3, '#38bdf8', 4, 15, 'nitro');
+                    } else {
+                        this.nitro = Math.min(100, this.nitro + 0.15); // Auto charge
+                    }
+
+                    if (inputs.up) {
+                        this.speed = Math.min(currentMaxSpeed, this.speed + currentAccel);
+                    } else if (inputs.down) {
+                        this.speed = Math.max(-this.maxSpeed * 0.4, this.speed - currentAccel);
+                    } else {
+                        this.speed *= 0.98;
+                    }
+
+                    if (Math.abs(this.speed) > 0.3) {
+                        let dir = this.speed > 0 ? 1 : -1;
+                        if (inputs.left) this.angle -= this.steering * dir;
+                        if (inputs.right) this.angle += this.steering * dir;
+                    }
+
+                    // Drift Physics Logic
+                    let forwardX = Math.sin(this.angle) * this.speed;
+                    let forwardY = -Math.cos(this.angle) * this.speed;
+
+                    // Blend lateral movement based on friction
+                    this.vx = this.vx * envFriction + forwardX * (1 - envFriction);
+                    this.vy = this.vy * envFriction + forwardY * (1 - envFriction);
+
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Slip angle calculation
+                    let moveAngle = Math.atan2(this.vy, this.vx) + Math.PI / 2;
+                    let diff = Math.abs(this.angle - moveAngle);
+                    diff = Math.atan2(Math.sin(diff), Math.cos(diff)); // Normalize
+
+                    let speedMag = Math.hypot(this.vx, this.vy);
+                    this.isDrifting = speedMag > 2.5 && Math.abs(diff) > 0.35;
+                    this.slipAngle = diff;
+
+                    if (this.isDrifting) {
+                        audio.playScreech();
+                        // Spawn Tire Smoke
+                        let rearX = this.x - Math.sin(this.angle) * 15;
+                        let rearY = this.y + Math.cos(this.angle) * 15;
+                        particleSystem.spawn(rearX, rearY, (Math.random() - 0.5), (Math.random() - 0.5), 'rgba(200,200,200,0.5)', 6, 20, 'smoke');
+                    }
+
+                    audio.updateEngine(speedMag / this.maxSpeed);
+                }
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                // Shadows
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fillRect(-this.width / 2 + 4, -this.height / 2 + 4, this.width, this.height);
+
+                // Car Chassis
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.roundRect(-this.width / 2, -this.height / 2, this.width, this.height, 6);
+                ctx.fill();
+
+                // Roof/Windshield
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(-this.width / 2 + 3, -this.height / 2 + 10, this.width - 6, 16);
+
+                // Headlights
+                ctx.fillStyle = '#fef08a';
+                ctx.fillRect(-this.width / 2 + 2, -this.height / 2, 5, 3);
+                ctx.fillRect(this.width / 2 - 7, -this.height / 2, 5, 3);
+
+                // Tail lights
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(-this.width / 2 + 2, this.height / 2 - 3, 5, 3);
+                ctx.fillRect(this.width / 2 - 7, this.height / 2 - 3, 5, 3);
+
+                ctx.restore();
+            }
+        }
+
+        class PoliceCar extends Vehicle {
+            constructor(x, y, speedCap) {
+                super(x, y, '#1e293b', false);
+                this.maxSpeed = speedCap;
+                this.sirenTimer = 0;
+            }
+
+            updateAI(target, obstacles, envFriction) {
+                let dx = target.x - this.x;
+                let dy = target.y - this.y;
+                let targetAngle = Math.atan2(dy, dx) + Math.PI / 2;
+
+                // Simple steering lerp towards player angle
+                let angleDiff = targetAngle - this.angle;
+                angleDiff = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
+
+                this.angle += Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), 0.045);
+                this.speed = Math.min(this.maxSpeed, this.speed + 0.15);
+
+                this.vx = Math.sin(this.angle) * this.speed;
+                this.vy = -Math.cos(this.angle) * this.speed;
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                this.sirenTimer += 0.2;
+            }
+
+            draw(ctx) {
+                super.draw(ctx);
+
+                // Police Roof Siren Flashers
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                let flash = Math.sin(this.sirenTimer) > 0;
+                ctx.fillStyle = flash ? '#ef4444' : '#3b82f6';
+                ctx.fillRect(-6, -2, 5, 4);
+                ctx.fillStyle = flash ? '#3b82f6' : '#ef4444';
+                ctx.fillRect(1, -2, 5, 4);
+
+                ctx.restore();
+            }
+        }
+
+        class MapManager {
+            constructor() {
+                this.obstacles = [];
+                this.roads = [];
+                this.generateMap();
+            }
+
+            generateMap() {
+                this.obstacles = [];
+                // World bounds roughly -2000 to 2000
+                for (let i = 0; i < 70; i++) {
+                    let x = (Math.random() - 0.5) * 3600;
+                    let y = (Math.random() - 0.5) * 3600;
+                    if (Math.hypot(x, y) > 300) { // Keep center clear
+                        let type = Math.random() > 0.4 ? 'tree' : 'building';
+                        this.obstacles.push({
+                            x, y,
+                            radius: type === 'tree' ? 24 : 45,
+                            type: type,
+                            width: type === 'building' ? 80 : 40,
+                            height: type === 'building' ? 80 : 40
+                        });
+                    }
+                }
+            }
+
+            draw(ctx, currentLevel) {
+                // Draw obstacles
+                this.obstacles.forEach(obs => {
+                    ctx.save();
+                    ctx.translate(obs.x, obs.y);
+                    if (obs.type === 'tree') {
+                        // Tree Canopy
+                        ctx.fillStyle = currentLevel.season === 'winter' ? '#94a3b8' : (currentLevel.season === 'autumn' ? '#b45309' : '#15803d');
+                        ctx.beginPath();
+                        ctx.arc(0, 0, obs.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else {
+                        // Building
+                        ctx.fillStyle = '#1e293b';
+                        ctx.fillRect(-obs.width/2, -obs.height/2, obs.width, obs.height);
+                        ctx.strokeStyle = '#334155';
+                        ctx.lineWidth = 4;
+                        ctx.strokeRect(-obs.width/2, -obs.height/2, obs.width, obs.height);
+                    }
+                    ctx.restore();
+                });
+            }
+        }
+
+        class Game {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.skidCanvas = document.createElement('canvas');
+                this.skidCtx = this.skidCanvas.getContext('2d');
+
+                this.input = new InputHandler();
+                this.particles = new ParticleSystem();
+                this.map = new MapManager();
+
+                this.levelIdx = 0;
+                this.currentLevel = LEVELS[0];
+                this.player = new Vehicle(0, 0, '#ef4444', true);
+                this.policeList = [];
+                
+                this.timer = 0;
+                this.score = 0;
+                this.combo = 1.0;
+                this.state = 'START'; // START, PLAYING, GAMEOVER, WIN
+                this.screenShake = 0;
+
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.skidCanvas.width = 4000;
+                this.skidCanvas.height = 4000;
+            }
+
+            startLevel(idx) {
+                this.levelIdx = idx;
+                this.currentLevel = LEVELS[idx];
+                this.player = new Vehicle(0, 0, '#06b6d4', true);
+                this.policeList = [];
+                this.timer = this.currentLevel.duration;
+                this.score = 0;
+                this.combo = 1.0;
+
+                // Clear skid marks
+                this.skidCtx.clearRect(0, 0, this.skidCanvas.width, this.skidCanvas.height);
+
+                // Spawn initial police units away from player
+                for (let i = 0; i < this.currentLevel.policeCount; i++) {
+                    let angle = (Math.PI * 2 / this.currentLevel.policeCount) * i;
+                    let px = Math.sin(angle) * 600;
+                    let py = -Math.cos(angle) * 600;
+                    this.policeList.push(new PoliceCar(px, py, this.currentLevel.policeSpeed));
+                }
+
+                document.getElementById('hud-level-name').innerText = `Level ${this.currentLevel.id} - ${this.currentLevel.name}`;
+                this.state = 'PLAYING';
+                document.getElementById('startModal').classList.add('hidden');
+                document.getElementById('gameOverModal').classList.add('hidden');
+                document.getElementById('winModal').classList.add('hidden');
+            }
+
+            update() {
+                if (this.state !== 'PLAYING') return;
+
+                // Timer tick
+                this.timer -= 1/60;
+                if (this.timer <= 0) {
+                    this.winGame();
+                }
+
+                // Weather particles
+                if (Math.random() < 0.4) {
+                    let rx = this.player.x + (Math.random() - 0.5) * window.innerWidth;
+                    let ry = this.player.y + (Math.random() - 0.5) * window.innerHeight;
+                    if (this.currentLevel.season === 'winter') {
+                        this.particles.spawn(rx, ry, -1, 2, '#ffffff', 3, 120, 'snow');
+                    } else if (this.currentLevel.petalColor) {
+                        this.particles.spawn(rx, ry, 1, 1.5, this.currentLevel.petalColor, 4, 100, 'leaf');
+                    }
+                }
+
+                // Player Update
+                this.player.update(this.input.keys, this.currentLevel.friction, this.particles);
+
+                // Draw Skid Marks onto persistent buffer
+                if (this.player.isDrifting) {
+                    this.skidCtx.save();
+                    this.skidCtx.translate(2000 + this.player.x, 2000 + this.player.y);
+                    this.skidCtx.rotate(this.player.angle);
+                    this.skidCtx.fillStyle = 'rgba(15, 23, 42, 0.15)';
+                    this.skidCtx.fillRect(-10, -15, 4, 8);
+                    this.skidCtx.fillRect(6, -15, 4, 8);
+                    this.skidCtx.restore();
+
+                    // Increment Drift Score
+                    this.combo = Math.min(5.0, this.combo + 0.005);
+                    this.score += Math.floor(10 * this.combo);
+                } else {
+                    this.combo = Math.max(1.0, this.combo - 0.01);
+                }
+
+                // Update Police Units
+                this.policeList.forEach(police => {
+                    police.updateAI(this.player, this.map.obstacles, this.currentLevel.friction);
+
+                    // Collision: Player vs Police
+                    let dist = Math.hypot(this.player.x - police.x, this.player.y - police.y);
+                    if (dist < 30) {
+                        this.player.health -= 0.6;
+                        this.screenShake = 12;
+                        audio.playCrash();
+                        
+                        // Collision Sparks
+                        for(let k=0; k<5; k++) {
+                            this.particles.spawn(
+                                (this.player.x + police.x)/2, 
+                                (this.player.y + police.y)/2, 
+                                (Math.random()-0.5)*6, (Math.random()-0.5)*6, 
+                                '#f59e0b', 3, 15
+                            );
+                        }
+                    }
+                });
+
+                // Collision: Player vs Map Obstacles
+                this.map.obstacles.forEach(obs => {
+                    let dist = Math.hypot(this.player.x - obs.x, this.player.y - obs.y);
+                    if (dist < obs.radius + 15) {
+                        this.player.health -= 0.8;
+                        this.player.speed = -this.player.speed * 0.5; // Bounce back
+                        this.screenShake = 10;
+                        audio.playCrash();
+                    }
+                });
+
+                // Death Check
+                if (this.player.health <= 0) {
+                    this.gameOver("Your vehicle was destroyed by pursuit forces!");
+                }
+
+                this.particles.update();
+                this.updateHUD();
+            }
+
+            updateHUD() {
+                document.getElementById('hud-timer').innerText = `0${Math.max(0, Math.floor(this.timer / 60))}:${Math.floor(this.timer % 60).toString().padStart(2, '0')}`;
+                document.getElementById('health-bar').style.width = `${Math.max(0, this.player.health)}%`;
+                document.getElementById('health-val').innerText = `${Math.ceil(Math.max(0, this.player.health))}%`;
+                document.getElementById('nitro-bar').style.width = `${this.player.nitro}%`;
+                document.getElementById('nitro-val').innerText = `${Math.ceil(this.player.nitro)}%`;
+                
+                let speedKmh = Math.floor(Math.hypot(this.player.vx, this.player.vy) * 18);
+                document.getElementById('speed-display').innerText = speedKmh;
+
+                document.getElementById('drift-score-display').innerText = `${this.score} PTS`;
+                let comboEl = document.getElementById('drift-combo-display');
+                comboEl.innerText = `DRIFT x${this.combo.toFixed(1)}`;
+                if (this.player.isDrifting) {
+                    comboEl.classList.add('active');
+                } else {
+                    comboEl.classList.remove('active');
+                }
+            }
+
+            render() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.ctx.save();
+                
+                // Screen Shake effect
+                if (this.screenShake > 0) {
+                    this.ctx.translate((Math.random() - 0.5) * this.screenShake, (Math.random() - 0.5) * this.screenShake);
+                    this.screenShake *= 0.85;
+                }
+
+                // Camera follow player
+                let camX = this.canvas.width / 2 - this.player.x;
+                let camY = this.canvas.height / 2 - this.player.y;
+                this.ctx.translate(camX, camY);
+
+                // Draw Ground background
+                this.ctx.fillStyle = this.currentLevel.bgColor;
+                this.ctx.fillRect(this.player.x - window.innerWidth, this.player.y - window.innerHeight, window.innerWidth * 2, window.innerHeight * 2);
+
+                // Draw Skid Buffer
+                this.ctx.drawImage(this.skidCanvas, -2000, -2000);
+
+                // Draw Map Objects
+                this.map.draw(this.ctx, this.currentLevel);
+
+                // Draw Entities
+                this.player.draw(this.ctx);
+                this.policeList.forEach(p => p.draw(this.ctx));
+                this.particles.draw(this.ctx);
+
+                // Draw Night Ambient / Light cones if Night level
+                if (this.currentLevel.timeOfDay === 'night') {
+                    this.ctx.restore();
+                    this.ctx.save();
+                    this.ctx.fillStyle = 'rgba(5, 10, 20, 0.55)';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                }
+
+                this.ctx.restore();
+            }
+
+            gameOver(reason) {
+                this.state = 'GAMEOVER';
+                document.getElementById('gameOverReason').innerText = reason;
+                document.getElementById('gameOverModal').classList.remove('hidden');
+            }
+
+            winGame() {
+                this.state = 'WIN';
+                document.getElementById('winScoreDisplay').innerText = `Total Drift Score: ${this.score}`;
+                document.getElementById('winModal').classList.remove('hidden');
+            }
+        }
+
+        let game = new Game();
+
+        function selectLevel(idx) {
+            let btns = document.querySelectorAll('.level-btn');
+            btns.forEach((b, i) => {
+                if (i === idx) b.classList.add('active');
+                else b.classList.remove('active');
+            });
+            game.levelIdx = idx;
+        }
+
+        function startGame() {
+            audio.init();
+            game.startLevel(game.levelIdx);
+        }
+
+        function restartLevel() {
+            game.startLevel(game.levelIdx);
+        }
+
+        function nextLevel() {
+            let next = (game.levelIdx + 1) % LEVELS.length;
+            game.startLevel(next);
+        }
+
+        function showStartMenu() {
+            game.state = 'START';
+            document.getElementById('startModal').classList.remove('hidden');
+            document.getElementById('gameOverModal').classList.add('hidden');
+            document.getElementById('winModal').classList.add('hidden');
+        }
+
+        document.getElementById('audioToggleBtn').addEventListener('click', () => {
+            audio.enabled = !audio.enabled;
+            document.getElementById('audioToggleBtn').innerText = audio.enabled ? "🔊 Audio: ON" : "🔇 Audio: OFF";
+        });
+
+        // Main game loop running at 60 FPS
+        function loop() {
+            game.update();
+            game.render();
+            requestAnimationFrame(loop);
+        }
+
+        window.onload = () => {
+            loop();
+        };
+    </script>
+</body>
+</html>
