@@ -1,36 +1,233 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Satoru Gojo Card</title>
-    <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Satoru Gojo Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Shippori+Mincho:wght@500;800&display=swap" rel="stylesheet">
+<style>
+@property --a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+:root {
+  --void: #04050e;
+  --infinity: #5fc8ff;
+  --eye: #e4f8ff;
+  --purple: #8b5cff;
+  --red: #ff4d7a;
+  --mute: #9fb0d6;
+  --ink: #eaf3ff;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; margin: 0; }
+
+body {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: max(28px, env(safe-area-inset-top)) 20px max(28px, env(safe-area-inset-bottom));
+  background: var(--void);
+  color: var(--ink);
+  font-family: 'Manrope', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Background: Blue + Red drift together and merge into Hollow Purple behind the card */
+#stars { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.orb {
+  position: fixed; z-index: 0; width: 54vmax; height: 54vmax; border-radius: 50%;
+  filter: blur(90px); opacity: .5; mix-blend-mode: screen; pointer-events: none;
+}
+.orb.blue { left: -14vmax; top: -12vmax; background: radial-gradient(circle, #2b8cff, transparent 65%); animation: drift-a 16s ease-in-out infinite alternate; }
+.orb.red  { right: -16vmax; bottom: -14vmax; background: radial-gradient(circle, #ff2d6a, transparent 65%); animation: drift-b 16s ease-in-out infinite alternate; }
+@keyframes drift-a { to { transform: translate(20vmax, 16vmax); } }
+@keyframes drift-b { to { transform: translate(-20vmax, -16vmax); } }
+
+/* Card */
+.stage {
+  position: relative; z-index: 1; width: min(900px, 100%);
+  perspective: 1400px;
+  animation: enter .9s cubic-bezier(.2, .7, .2, 1) both;
+}
+@keyframes enter { from { opacity: 0; transform: translateY(18px) scale(.97); } }
+
+.frame {
+  padding: 1.5px; border-radius: 30px;
+  background: conic-gradient(from var(--a), #5fc8ff, #8b5cff 30%, #ff4d7a 52%, #8b5cff 70%, #5fc8ff);
+  box-shadow: 0 40px 100px -30px rgba(139, 92, 255, .55), 0 0 70px -15px rgba(95, 200, 255, .3);
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform .25s ease-out;
+  animation: spin 9s linear infinite;
+}
+@keyframes spin { to { --a: 360deg; } }
+
+.card {
+  position: relative; overflow: hidden;
+  display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 40px;
+  padding: 24px; border-radius: 28.5px;
+  background: linear-gradient(160deg, rgba(11, 15, 40, .96), rgba(6, 8, 22, .97));
+}
+.card::before { /* cursor spotlight */
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(420px circle at var(--mx, 25%) var(--my, 15%), rgba(95, 200, 255, .14), transparent 65%);
+}
+
+/* Portrait with an "Infinity" ring around it */
+.portrait-wrap { position: relative; }
+.portrait-wrap::before {
+  content: ''; position: absolute; inset: -9px; border-radius: 26px; pointer-events: none;
+  border: 1px solid rgba(95, 200, 255, .22);
+}
+.portrait {
+  position: relative; height: 100%; min-height: 400px; overflow: hidden; border-radius: 18px;
+  background: radial-gradient(120% 80% at 50% 0%, #14307a, #070a1c 70%);
+}
+.portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.portrait::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(to top, rgba(4, 5, 14, .85), transparent 45%),
+    radial-gradient(circle at 50% 0%, rgba(95, 200, 255, .25), transparent 55%);
+  box-shadow: inset 0 0 0 1px rgba(160, 220, 255, .25);
+}
+.portrait.missing img { display: none; }
+.kanji {
+  position: absolute; z-index: 2; right: 16px; bottom: 16px;
+  writing-mode: vertical-rl; font-family: 'Shippori Mincho', serif; font-size: 1.35rem; letter-spacing: .3em;
+  color: var(--eye); text-shadow: 0 0 14px rgba(95, 200, 255, .85);
+}
+
+/* Text */
+.details { position: relative; display: flex; flex-direction: column; justify-content: center; padding: 10px 12px 10px 0; }
+.title {
+  font-family: 'Shippori Mincho', serif; font-weight: 800;
+  font-size: clamp(2rem, 4.4vw, 3rem); line-height: 1.1; letter-spacing: .01em;
+  background: linear-gradient(100deg, #fff 15%, #9be0ff 55%, #b99bff);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 22px rgba(95, 200, 255, .25));
+}
+.who { margin-top: 8px; font-family: 'Shippori Mincho', serif; font-size: 1.05rem; color: #b9a2ff; letter-spacing: .04em; }
+.greet { margin-top: 26px; font-style: italic; font-size: .95rem; color: var(--mute); }
+.verse { margin-top: 10px; padding-left: 18px; border-left: 2px solid; border-image: linear-gradient(to bottom, #5fc8ff, #8b5cff) 1; }
+.verse span { display: block; font-size: 1.02rem; line-height: 1.85; color: #d3def5; }
+.sign {
+  margin-top: 24px; text-align: right;
+  font-family: 'Shippori Mincho', serif; font-weight: 800; font-size: 1.3rem; color: var(--eye);
+  text-shadow: 0 0 18px rgba(95, 200, 255, .55);
+}
+.corps { margin-top: 4px; text-align: right; font-size: .9rem; color: var(--mute); }
+
+/* One orchestrated moment: lines resolve out of the void one by one */
+.r { opacity: 0; animation: reveal .8s ease forwards; animation-delay: calc(.8s + var(--i) * .14s); }
+@keyframes reveal {
+  from { opacity: 0; filter: blur(8px); transform: translateY(8px); }
+  to   { opacity: 1; filter: none; transform: none; }
+}
+
+@media (max-width: 760px) {
+  .card { grid-template-columns: 1fr; gap: 30px; padding: 18px; }
+  .portrait { min-height: 0; aspect-ratio: 4 / 3.4; }
+  .details { padding: 0 4px 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage, .frame, .orb { animation: none; }
+  .r { opacity: 1; animation: none; }
+  .frame { transition: none; }
+}
+</style>
 </head>
 <body>
 
-    <div class="card">
-        <div class="imgBox">
-            <div class="bark"></div>
-            <img src="./8431767.jpg" alt="Satoru Gojo Team">
+<canvas id="stars" aria-hidden="true"></canvas>
+<div class="orb blue" aria-hidden="true"></div>
+<div class="orb red" aria-hidden="true"></div>
+
+<main class="stage">
+  <div class="frame">
+    <article class="card">
+
+      <div class="portrait-wrap">
+        <div class="portrait">
+          <img src="./8431767.jpg" alt="Satoru Gojo Team" onerror="this.parentNode.classList.add('missing')">
+          <span class="kanji" aria-hidden="true">無下限</span>
         </div>
+      </div>
 
-        <div class="details">
-            <h4 class="color1">Set Your Heart Ablaze!</h4>
-            <h4 class="color2 margin">(Satoru Gojo)</h4>
+      <div class="details">
+        <h1 class="title r" style="--i:0">Set Your Heart Ablaze!</h1>
+        <p class="who r" style="--i:1">(Satoru Gojo)</p>
 
-            <p>Dear Fellow Slayer,</p>
-            <p>Go ahead and live with</p>
-            <p>your head held high.</p>
-            <p>No matter how devastated</p>
-            <p>you may be by your own</p>
-            <p>weakness or uselessness...</p>
-            <p>Grit your teeth and look </p>
-            <p> look straight ahead.</p>
+        <p class="greet r" style="--i:2">Dear Fellow Slayer,</p>
+        <blockquote class="verse">
+          <span class="r" style="--i:3">Go ahead and live with</span>
+          <span class="r" style="--i:4">your head held high.</span>
+          <span class="r" style="--i:5">No matter how devastated</span>
+          <span class="r" style="--i:6">you may be by your own</span>
+          <span class="r" style="--i:7">weakness or uselessness...</span>
+          <span class="r" style="--i:8">Grit your teeth and look</span>
+          <span class="r" style="--i:9">straight ahead.</span>
+        </blockquote>
 
-            <p class="text-right">Keep fighting!</p>
-            <p class="text-right">⚔️ Satoru Gojo Corps</p>
-        </div>
-    </div>
+        <p class="sign r" style="--i:10">Keep fighting!</p>
+        <p class="corps r" style="--i:11">⚔️ Satoru Gojo Corps</p>
+      </div>
 
+    </article>
+  </div>
+</main>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Starfield drifting slowly toward the viewer */
+  const cv = document.getElementById('stars'), ctx = cv.getContext('2d');
+  let w, h, dpr, stars = [];
+  const spawn = (s, far) => {
+    s.x = (Math.random() - .5) * w * 1.4;
+    s.y = (Math.random() - .5) * w * 1.4;
+    s.z = far ? w : Math.random() * w;
+    return s;
+  };
+  const init = () => {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    w = cv.width = innerWidth * dpr;
+    h = cv.height = innerHeight * dpr;
+    stars = Array.from({ length: Math.round(innerWidth * innerHeight / 7000) }, () => spawn({}, false));
+  };
+  const draw = () => {
+    ctx.clearRect(0, 0, w, h);
+    for (const s of stars) {
+      if (!reduce) s.z -= w * .0006;
+      const sx = s.x / s.z * w * .5 + w / 2, sy = s.y / s.z * w * .5 + h / 2;
+      if (s.z < 1 || sx < 0 || sx > w || sy < 0 || sy > h) { spawn(s, true); continue; }
+      const t = 1 - s.z / w;
+      ctx.fillStyle = `rgba(200, 235, 255, ${(t * .9).toFixed(3)})`;
+      ctx.beginPath(); ctx.arc(sx, sy, t * 2.2 * dpr, 0, 6.2832); ctx.fill();
+    }
+    if (!reduce) requestAnimationFrame(draw);
+  };
+  init(); draw();
+  addEventListener('resize', () => { init(); if (reduce) draw(); });
+
+  /* 3D tilt + spotlight that follow the cursor */
+  const frame = document.querySelector('.frame'), card = document.querySelector('.card');
+  if (!reduce && matchMedia('(hover: hover)').matches) {
+    addEventListener('pointermove', e => {
+      const px = e.clientX / innerWidth - .5, py = e.clientY / innerHeight - .5;
+      frame.style.setProperty('--ry', (px * 10).toFixed(2) + 'deg');
+      frame.style.setProperty('--rx', (-py * 8).toFixed(2) + 'deg');
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+    document.documentElement.addEventListener('pointerleave', () => {
+      frame.style.setProperty('--rx', '0deg');
+      frame.style.setProperty('--ry', '0deg');
+    });
+  }
+})();
+</script>
 </body>
 </html>
