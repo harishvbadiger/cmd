@@ -1,257 +1,346 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Harish | Student Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      scroll-behavior: smooth;
+    :root {
+      --bg: #151033;
+      --ink: #f3f0ff;
+      --mute: #b9b0e3;
+      --blue: #4f7cff;
+      --sky: #8ab4ff;
+      --coral: #ff6b8b;
+      --lemon: #ffd84d;
+      --mint: #5df2c3;
+      --line: rgba(255, 255, 255, 0.14);
+      --display: 'Unbounded', 'Trebuchet MS', system-ui, sans-serif;
     }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; scroll-padding-top: 90px; background: var(--bg); }
 
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f7fb;
-      color: #222;
-      line-height: 1.6;
+      font-family: 'Figtree', system-ui, sans-serif;
+      color: var(--ink);
+      line-height: 1.65;
+      overflow-x: hidden;
     }
 
-    header {
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
-      color: white;
-      text-align: center;
-      padding: 90px 20px;
-    }
+    a:focus-visible { outline: 3px solid var(--lemon); outline-offset: 3px; }
 
-    header h1 {
-      font-size: 50px;
-      margin-bottom: 10px;
+    /* ---------- background ---------- */
+    .bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+    .bg::after {
+      content: ""; position: absolute; inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+      background-size: 28px 28px;
+      -webkit-mask-image: radial-gradient(ellipse at 50% 30%, #000 20%, transparent 75%);
+      mask-image: radial-gradient(ellipse at 50% 30%, #000 20%, transparent 75%);
     }
-
-    header p {
-      font-size: 20px;
-      opacity: 0.9;
+    .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; animation: drift 20s ease-in-out infinite alternate; }
+    .o1 { width: 520px; height: 520px; background: var(--blue); top: -140px; left: -120px; }
+    .o2 { width: 440px; height: 440px; background: var(--coral); top: 25%; right: -140px; animation-duration: 26s; opacity: 0.38; }
+    .o3 { width: 400px; height: 400px; background: #7c3aed; bottom: -120px; left: 25%; animation-duration: 23s; }
+    .glow {
+      position: absolute; left: 0; top: 0; width: 420px; height: 420px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(138, 180, 255, 0.22), transparent 65%);
+      transition: transform 0.25s ease-out;
     }
+    @keyframes drift { to { transform: translate(70px, -50px) scale(1.15); } }
 
+    /* ---------- nav ---------- */
     nav {
-      background: white;
-      padding: 15px;
-      text-align: center;
-      position: sticky;
-      top: 0;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-      z-index: 10;
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 50;
+      display: flex; gap: 4px; padding: 6px; border-radius: 999px;
+      background: rgba(21, 16, 51, 0.55);
+      -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+      border: 1px solid var(--line);
     }
-
     nav a {
-      color: #333;
-      text-decoration: none;
-      margin: 0 15px;
-      font-weight: bold;
+      color: var(--ink); text-decoration: none; font-weight: 700; font-size: 15px;
+      padding: 8px 18px; border-radius: 999px; transition: background 0.2s, color 0.2s;
     }
+    nav a:hover { background: var(--ink); color: var(--bg); }
 
-    nav a:hover {
-      color: #2563eb;
+    /* ---------- hero ---------- */
+    header {
+      min-height: 100vh; min-height: 100svh;
+      max-width: 1180px; margin: auto; padding: 120px 24px 64px;
+      display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 48px; align-items: center;
     }
+    .hi { font-size: clamp(20px, 2.6vw, 28px); font-weight: 500; color: var(--mute); }
+    .wave { display: inline-block; transform-origin: 70% 70%; animation: wave 1.6s 1s 2; }
+    @keyframes wave { 0%, 60%, 100% { transform: rotate(0); } 15% { transform: rotate(16deg); } 30% { transform: rotate(-10deg); } 45% { transform: rotate(14deg); } }
 
-    section {
-      max-width: 900px;
-      margin: auto;
-      padding: 70px 20px;
+    h1 {
+      font-family: var(--display); font-weight: 800;
+      font-size: clamp(54px, 12vw, 150px); line-height: 1; letter-spacing: -0.04em;
+      margin: 6px 0 10px; white-space: nowrap;
+      text-shadow: 0.05em 0.05em 0 var(--coral), 0.1em 0.1em 0 var(--blue);
     }
-
-    h2 {
-      text-align: center;
-      color: #2563eb;
-      margin-bottom: 30px;
-      font-size: 32px;
+    .ch {
+      display: inline-block; cursor: default;
+      animation: drop 0.9s cubic-bezier(0.2, 1.5, 0.4, 1) backwards;
+      animation-delay: calc(var(--i) * 80ms + 150ms);
+      transition: transform 0.25s cubic-bezier(0.2, 1.6, 0.4, 1), color 0.25s;
     }
+    .ch:hover { transform: translateY(-0.12em) rotate(-7deg); color: var(--lemon); }
+    @keyframes drop { from { opacity: 0; transform: translateY(-0.7em) rotate(-14deg) scale(0.6); } }
 
-    .about {
-      text-align: center;
-      font-size: 18px;
+    .role { font-size: clamp(20px, 3vw, 30px); font-weight: 700; margin-top: 26px; min-height: 1.7em; }
+    #type { color: var(--mint); }
+    .caret { display: inline-block; width: 3px; height: 1em; background: var(--mint); margin-left: 4px; vertical-align: -0.12em; animation: blink 1s steps(1) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    .where { color: var(--mute); font-size: 18px; margin-top: 4px; }
+
+    .cta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 36px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 28px; border-radius: 14px; font-weight: 700; font-size: 16px;
+      text-decoration: none; transition: transform 0.12s, box-shadow 0.12s, background 0.2s;
     }
+    .primary { background: var(--coral); color: #1a0f2e; box-shadow: 0 6px 0 #b83a5a; }
+    .primary:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #b83a5a; }
+    .primary:active { transform: translateY(6px); box-shadow: 0 0 0 #b83a5a; }
+    .ghost { border: 2px solid var(--line); color: var(--ink); }
+    .ghost:hover { background: rgba(255, 255, 255, 0.1); }
 
-    .cards {
-      display: flex;
-      justify-content: center;
-      gap: 25px;
-      flex-wrap: wrap;
+    /* player card */
+    .player {
+      padding: 28px; border-radius: 30px; transform: rotate(2.5deg);
+      background: rgba(255, 255, 255, 0.07);
+      -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+      border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+      animation: rise 1s 0.9s cubic-bezier(0.2, 1.2, 0.4, 1) backwards;
     }
-
-    .card {
-      background: white;
-      width: 250px;
-      padding: 30px;
-      text-align: center;
-      border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-      transition: 0.3s;
+    @keyframes rise { from { opacity: 0; transform: translateY(40px) rotate(8deg); } }
+    .ph { display: flex; align-items: center; gap: 16px; }
+    .av {
+      width: 62px; height: 62px; border-radius: 18px; display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--blue), var(--coral));
+      font: 800 28px var(--display);
     }
+    .ph b { display: block; font-family: var(--display); font-size: 20px; letter-spacing: -0.02em; }
+    .lvl { display: inline-block; background: var(--lemon); color: #1a0f2e; font-size: 13px; font-weight: 700; padding: 1px 10px; border-radius: 99px; }
+    .facts { list-style: none; margin: 22px 0; padding: 16px 0; border-block: 1px dashed var(--line); display: grid; gap: 6px; color: var(--mute); }
+    .row { display: grid; grid-template-columns: 112px 1fr; align-items: center; gap: 12px; margin-top: 12px; font-weight: 500; font-size: 15px; }
+    .bar { height: 10px; border-radius: 99px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
+    .bar i { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--c); transition: width 1.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .in .bar i { width: var(--v); }
 
-    .card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    /* ---------- sections ---------- */
+    section { max-width: 1080px; margin: auto; padding: 100px 24px; }
+    h2 { font-family: var(--display); font-weight: 600; font-size: clamp(30px, 5vw, 52px); letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 40px; }
+
+    .about p { font-size: clamp(22px, 3vw, 34px); line-height: 1.5; font-weight: 500; max-width: 28em; }
+    .about strong { background: linear-gradient(transparent 62%, rgba(255, 216, 77, 0.4) 62%); }
+
+    .hobbies { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .hobby {
+      padding: 34px 30px 38px;
+      background: linear-gradient(160deg, color-mix(in srgb, var(--c) 24%, transparent), rgba(255, 255, 255, 0.04));
+      border: 1px solid color-mix(in srgb, var(--c) 50%, transparent);
+      transition: transform 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
     }
+    .hobby:nth-child(1) { --c: var(--coral); border-radius: 28px 28px 28px 96px; }
+    .hobby:nth-child(2) { --c: var(--lemon); border-radius: 96px 28px 28px 28px; }
+    .hobby:nth-child(3) { --c: var(--mint); border-radius: 28px 96px 28px 28px; }
+    .hobby:hover { transform: translateY(-10px) rotate(-1.5deg); }
+    .hobby .ico { font-size: 54px; line-height: 1; margin-bottom: 18px; }
+    .hobby h3 { font-family: var(--display); font-weight: 600; font-size: 20px; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .hobby p { color: var(--mute); }
 
-    .card .icon {
-      font-size: 45px;
-      margin-bottom: 15px;
+    /* games: level-select rows */
+    .games { display: grid; gap: 14px; }
+    .game {
+      position: relative; overflow: hidden; isolation: isolate;
+      display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 24px;
+      padding: 22px 28px; border-radius: 24px; text-decoration: none; color: var(--ink);
+      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line);
+      transition: color 0.3s, transform 0.3s;
     }
-
-    .contact {
-      text-align: center;
-      background: #111827;
-      color: white;
-      max-width: none;
+    .game::before {
+      content: ""; position: absolute; inset: 0; z-index: -1; background: var(--c);
+      transform: scaleX(0); transform-origin: left; transition: transform 0.45s cubic-bezier(0.7, 0, 0.2, 1);
     }
+    .game:hover, .game:focus-visible { color: #1a0f2e; transform: translateX(8px); }
+    .game:hover::before, .game:focus-visible::before { transform: scaleX(1); }
+    .gi { width: 74px; height: 74px; border-radius: 20px; display: grid; place-items: center; font-size: 36px; background: rgba(255, 255, 255, 0.1); }
+    .game h3 { font-family: var(--display); font-weight: 600; font-size: clamp(20px, 3vw, 32px); letter-spacing: -0.02em; line-height: 1.2; }
+    .game p { color: var(--mute); transition: color 0.3s; }
+    .game:hover p, .game:focus-visible p { color: #3a2a63; }
+    .play { display: inline-flex; align-items: center; gap: 10px; padding: 10px 22px; border: 2px solid currentColor; border-radius: 999px; font-weight: 700; }
+    .play::before { content: ""; border-left: 9px solid currentColor; border-block: 6px solid transparent; }
 
-    .contact h2 {
-      color: white;
+    /* contact */
+    .contact { border-top: 1px dashed var(--line); text-align: left; }
+    .contact p { font-family: var(--display); font-weight: 600; font-size: clamp(24px, 4.2vw, 48px); letter-spacing: -0.03em; line-height: 1.2; max-width: 14em; margin-bottom: 36px; }
+
+    footer { text-align: center; color: var(--mute); padding: 28px 20px 40px; font-size: 14px; }
+
+    @media (max-width: 900px) {
+      header { grid-template-columns: 1fr; padding-top: 110px; }
+      .player { max-width: 400px; transform: rotate(1.5deg); }
+      .hobbies { grid-template-columns: 1fr; }
     }
-
-    footer {
-      background: #0b1120;
-      color: #aaa;
-      text-align: center;
-      padding: 20px;
+    @media (max-width: 640px) {
+      nav a { padding: 8px 12px; font-size: 14px; }
+      section { padding: 72px 20px; }
+      .game { grid-template-columns: auto 1fr; padding: 18px; gap: 16px; }
+      .gi { width: 58px; height: 58px; font-size: 28px; }
+      .play { grid-column: 1 / -1; justify-self: start; }
     }
-
-    @media (max-width: 600px) {
-      header h1 {
-        font-size: 38px;
-      }
-
-      nav a {
-        margin: 0 7px;
-        font-size: 14px;
-      }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before { animation: none !important; transition: none !important; }
     }
   </style>
 </head>
 
 <body>
-
-  <header>
-    <h1>Hi, I'm Harish 👋</h1>
-    <p>2nd Year Student | JIT College, Davanagere</p>
-  </header>
+  <div class="bg" aria-hidden="true">
+    <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+    <div class="glow" id="glow"></div>
+  </div>
 
   <nav>
     <a href="#about">About</a>
     <a href="#hobbies">Hobbies</a>
+    <a href="#games">Games</a>
     <a href="#contact">Contact</a>
   </nav>
 
-  <section id="about">
-    <h2>About Me</h2>
-    <div class="about">
-      <p>
-        Hello! My name is <strong>Harish</strong>. I am currently studying
-        in my 2nd year at <strong>JIT College, Davanagere</strong>.
-        I enjoy learning new things and spending my free time doing
-        activities that I love.
-      </p>
+  <header id="top">
+    <div class="intro">
+      <p class="hi">Hi, I'm <span class="wave">👋</span></p>
+      <h1 id="name">Harish</h1>
+      <p class="role">A <span id="type"></span><i class="caret"></i></p>
+      <p class="where">🎓 JIT College, Davanagere</p>
+      <div class="cta">
+        <a class="btn primary" href="#games">Play my games</a>
+        <a class="btn ghost" href="#about">About me</a>
+      </div>
     </div>
+
+    <aside class="player" id="player" aria-label="Player card">
+      <div class="ph">
+        <div class="av">H</div>
+        <div><b>Harish</b><span class="lvl">Level 2 student</span></div>
+      </div>
+      <ul class="facts">
+        <li>🎓 JIT College</li>
+        <li>📍 Davanagere</li>
+      </ul>
+      <div class="row"><span>📚 Reading</span><div class="bar" style="--c:var(--coral);--v:82%"><i></i></div></div>
+      <div class="row"><span>🎮 Gaming</span><div class="bar" style="--c:var(--lemon);--v:90%"><i></i></div></div>
+      <div class="row"><span>💻 Learning</span><div class="bar" style="--c:var(--mint);--v:75%"><i></i></div></div>
+    </aside>
+  </header>
+
+  <section id="about" class="about">
+    <h2>About me</h2>
+    <p>
+      Hello! My name is <strong>Harish</strong>. I am currently studying in my 2nd year at
+      <strong>JIT College, Davanagere</strong>. I enjoy learning new things and spending my free time
+      doing activities that I love.
+    </p>
   </section>
 
   <section id="hobbies">
-    <h2>My Hobbies</h2>
-
-    <div class="cards">
-
-      <div class="card">
-        <div class="icon">📚</div>
-        <h3>Reading Books</h3>
-        <p>
-          I enjoy reading books and exploring new ideas through reading.
-        </p>
+    <h2>My hobbies</h2>
+    <div class="hobbies">
+      <div class="hobby">
+        <div class="ico">📚</div>
+        <h3>Reading books</h3>
+        <p>I enjoy reading books and exploring new ideas through reading.</p>
       </div>
-
-      <div class="card">
-        <div class="icon">🎮</div>
-        <h3>Playing Games</h3>
-        <p>
-          I like playing games during my free time for fun and relaxation.
-        </p>
+      <div class="hobby">
+        <div class="ico">🎮</div>
+        <h3>Playing games</h3>
+        <p>I like playing games during my free time for fun and relaxation.</p>
       </div>
-
-      <div class="card">
-        <div class="icon">💻</div>
+      <div class="hobby">
+        <div class="ico">💻</div>
         <h3>Learning</h3>
-        <p>
-          I am interested in learning new skills and improving myself.
-        </p>
+        <p>I am interested in learning new skills and improving myself.</p>
       </div>
-
     </div>
   </section>
-  <section id="Games">
-    <h2>My Games</h2>
 
-    <div class="cards">
-      <a href="typinggame.html">
-
-
-        <div class="card">
-          <div class="icon">📚</div>
-          <h3>Typing game</h3>
-          <p>
-            Type as fast as you can
-          </p>
-        </div>
+  <section id="games">
+    <h2>My games</h2>
+    <div class="games">
+      <a class="game" href="typinggame.html" style="--c:var(--lemon)">
+        <div class="gi">⌨️</div>
+        <div><h3>Typing game</h3><p>Type as fast as you can</p></div>
+        <span class="play">Play</span>
+      </a>
+      <a class="game" href="driftinggame.html" style="--c:var(--coral)">
+        <div class="gi">🏎️</div>
+        <div><h3>Drifting game</h3><p>Drift and escape as fast as you can</p></div>
+        <span class="play">Play</span>
+      </a>
+      <a class="game" href="invite.html" style="--c:var(--sky)">
+        <div class="gi">🌀</div>
+        <div><h3>Gojo invite card</h3><p>Open the Gojo card</p></div>
+        <span class="play">Open</span>
       </a>
     </div>
-
-    <div class="cards">
-      <a href="driftinggame.html">
-
-
-        <div class="card">
-          <div class="icon">📚</div>
-          <h4>drifting game</h4>
-          <p>
-            drift and escape as fast as you can
-          </p>
-        </div>
-      </a>
-
-    </div>
-    <div class="cards">
-      <a href="invite.html">
-
-
-        <div class="card">
-          <div class="icon">📚</div>
-          <h4>Gojo invite card</h4>
-          <p>
-            Gojo card
-          </p>
-        </div>
-      </a>
-
-    </div>
-
-
-
-
-
   </section>
 
   <section class="contact" id="contact">
-    <h2>Get In Touch</h2>
+    <h2>Get in touch</h2>
     <p>Thanks for visiting my personal page!</p>
+    <a class="btn ghost" href="#top">Back to top</a>
   </section>
 
   <footer>
     <p>© 2026 Harish. All Rights Reserved.</p>
   </footer>
 
-</body>
+  <script>
+    // Name letters drop in one by one
+    const nameEl = document.getElementById('name');
+    nameEl.setAttribute('aria-label', 'Harish');
+    [...'Harish'].forEach((c, i) => {
+      const s = document.createElement('span');
+      s.className = 'ch'; s.textContent = c; s.setAttribute('aria-hidden', 'true');
+      s.style.setProperty('--i', i);
+      nameEl.appendChild(s);
+    });
+    nameEl.firstChild.remove && 0;
+    nameEl.childNodes.forEach(n => { if (n.nodeType === 3) n.remove(); });
 
+    // Typing roles
+    const words = ['2nd year student', 'book lover', 'gamer', 'curious learner'];
+    const typeEl = document.getElementById('type');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let w = 0, i = 0, del = false;
+    function tick() {
+      const word = words[w];
+      if (reduce) { typeEl.textContent = word; return; }
+      typeEl.textContent = word.slice(0, i);
+      if (!del && i < word.length) { i++; setTimeout(tick, 90); }
+      else if (!del) { del = true; setTimeout(tick, 1400); }
+      else if (i > 0) { i--; setTimeout(tick, 45); }
+      else { del = false; w = (w + 1) % words.length; setTimeout(tick, 300); }
+    }
+    tick();
+
+    // Fill the stat bars
+    setTimeout(() => document.getElementById('player').classList.add('in'), 1300);
+
+    // Soft light that follows the pointer
+    const glow = document.getElementById('glow');
+    addEventListener('pointermove', e => {
+      glow.style.transform = `translate(${e.clientX - 210}px, ${e.clientY - 210}px)`;
+    });
+  </script>
+</body>
 </html>
